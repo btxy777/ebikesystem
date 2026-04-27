@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ebike.mapper.StationMapper">
+    <resultMap id="stationMap" type="com.ebike.entity.Station">
+        <id column="id" property="id" />
+        <result column="station_name" property="stationName" />
+        <result column="latitude" property="latitude" />
+        <result column="longitude" property="longitude" />
+        <result column="address" property="address" />
+        <result column="capacity" property="capacity" />
+        <result column="available_slots" property="availableSlots" />
+        <result column="create_time" property="createTime" />
+    </resultMap>
+
+    <select id="selectAll" resultMap="stationMap">
+        SELECT * FROM stations
+    </select>
+
+    <select id="selectById" parameterType="long" resultMap="stationMap">
+        SELECT * FROM stations WHERE id = #{id}
+    </select>
+
+    <select id="selectRandomStation" resultMap="stationMap">
+        SELECT * FROM stations ORDER BY RAND() LIMIT 1
+    </select>
+
+    <insert id="insert" parameterType="com.ebike.entity.Station">
+        INSERT INTO stations (station_name, latitude, longitude, address, capacity, available_slots, create_time)
+        VALUES (#{stationName}, #{latitude}, #{longitude}, #{address}, #{capacity}, #{availableSlots}, #{createTime})
+    </insert>
+
+    <update id="update" parameterType="com.ebike.entity.Station">
+        UPDATE stations SET
+        station_name = #{stationName},
+        latitude = #{latitude},
+        longitude = #{longitude},
+        address = #{address},
+        capacity = #{capacity},
+        available_slots = #{availableSlots}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById" parameterType="long">
+        DELETE FROM stations WHERE id = #{id}
+    </delete>
+</mapper>

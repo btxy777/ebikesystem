@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ebike.mapper.FaultReportMapper">
+    <resultMap id="faultReportMap" type="com.ebike.entity.FaultReport">
+        <id column="id" property="id" />
+        <result column="user_id" property="userId" />
+        <result column="vehicle_id" property="vehicleId" />
+        <result column="description" property="description" />
+        <result column="status" property="status" />
+        <result column="operator_id" property="operatorId" />
+        <result column="create_time" property="createTime" />
+        <result column="resolve_time" property="resolveTime" />
+        <association property="user" javaType="com.ebike.entity.User">
+            <id column="user_id" property="id" />
+            <result column="user_username" property="username" />
+        </association>
+        <association property="vehicle" javaType="com.ebike.entity.Vehicle">
+            <id column="vehicle_id" property="id" />
+            <result column="vehicle_code" property="vehicleCode" />
+        </association>
+        <association property="operator" javaType="com.ebike.entity.User">
+            <id column="operator_id" property="id" />
+            <result column="operator_username" property="username" />
+        </association>
+    </resultMap>
+
+    <select id="selectAll" resultMap="faultReportMap">
+        SELECT fr.*,
+               u.username as user_username,
+               v.vehicle_code as vehicle_code,
+               op.username as operator_username
+        FROM fault_reports fr
+        LEFT JOIN users u ON fr.user_id = u.id
+        LEFT JOIN vehicles v ON fr.vehicle_id = v.id
+        LEFT JOIN users op ON fr.operator_id = op.id
+        ORDER BY fr.create_time DESC
+    </select>
+
+    <select id="selectById" parameterType="long" resultMap="faultReportMap">
+        SELECT fr.*,
+               u.username as user_username,
+               v.vehicle_code as vehicle_code,
+               op.username as operator_username
+        FROM fault_reports fr
+        LEFT JOIN users u ON fr.user_id = u.id
+        LEFT JOIN vehicles v ON fr.vehicle_id = v.id
+        LEFT JOIN users op ON fr.operator_id = op.id
+        WHERE fr.id = #{id}
+    </select>
+
+    <select id="selectByStatus" parameterType="integer" resultMap="faultReportMap">
+        SELECT fr.*,
+               u.username as user_username,
+               v.vehicle_code as vehicle_code,
+               op.username as operator_username
+        FROM fault_reports fr
+        LEFT JOIN users u ON fr.user_id = u.id
+        LEFT JOIN vehicles v ON fr.vehicle_id = v.id
+        LEFT JOIN users op ON fr.operator_id = op.id
+        WHERE fr.status = #{status}
+        ORDER BY fr.create_time DESC
+    </select>
+
+    <select id="selectByOperatorId" parameterType="long" resultMap="faultReportMap">
+        SELECT fr.*,
+               u.username as user_username,
+               v.vehicle_code as vehicle_code,
+               op.username as operator_username
+        FROM fault_reports fr
+        LEFT JOIN users u ON fr.user_id = u.id
+        LEFT JOIN vehicles v ON fr.vehicle_id = v.id
+        LEFT JOIN users op ON fr.operator_id = op.id
+        WHERE fr.operator_id = #{operatorId}
+        ORDER BY fr.create_time DESC
+    </select>
+
+    <insert id="insert" parameterType="com.ebike.entity.FaultReport">
+        INSERT INTO fault_reports (user_id, vehicle_id, description, status, operator_id, create_time, resolve_time)
+        VALUES (#{userId}, #{vehicleId}, #{description}, #{status}, #{operatorId}, #{createTime}, #{resolveTime})
+    </insert>
+
+    <update id="update" parameterType="com.ebike.entity.FaultReport">
+        UPDATE fault_reports SET
+        description = #{description},
+        status = #{status},
+        operator_id = #{operatorId},
+        resolve_time = #{resolveTime}
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateStatus">
+        UPDATE fault_reports SET
+        status = #{status},
+        operator_id = #{operatorId},
+        resolve_time = #{resolveTime}
+        WHERE id = #{id}
+    </update>
+
+    <select id="selectByVehicleId" parameterType="long" resultMap="faultReportMap">
+        SELECT * FROM fault_reports WHERE vehicle_id = #{vehicleId} ORDER BY create_time DESC
+    </select>
+
+    <select id="selectCount" resultType="long">
+        SELECT COUNT(*) FROM fault_reports
+    </select>
+
+    <select id="selectByLowBattery" resultMap="faultReportMap">
+        SELECT fr.*,
+               u.username as user_username,
+               v.vehicle_code as vehicle_code,
+               op.username as operator_username
+        FROM fault_reports fr
+        LEFT JOIN users u ON fr.user_id = u.id
+        LEFT JOIN vehicles v ON fr.vehicle_id = v.id
+        LEFT JOIN users op ON fr.operator_id = op.id
+        WHERE fr.description = '电量不足'
+        ORDER BY fr.create_time DESC
+    </select>
+</mapper>

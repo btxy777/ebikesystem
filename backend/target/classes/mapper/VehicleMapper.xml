@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ebike.mapper.VehicleMapper">
+    <resultMap id="vehicleMap" type="com.ebike.entity.Vehicle">
+        <id column="id" property="id" />
+        <result column="vehicle_code" property="vehicleCode" />
+        <result column="vehicle_type" property="vehicleType" />
+        <result column="status" property="status" />
+        <result column="current_station_id" property="currentStationId" />
+        <result column="battery_level" property="batteryLevel" />
+        <result column="create_time" property="createTime" />
+        <result column="last_maintenance_time" property="lastMaintenanceTime" />
+        <association property="currentStation" javaType="com.ebike.entity.Station">
+            <id column="s_id" property="id" />
+            <result column="station_name" property="stationName" />
+            <result column="latitude" property="latitude" />
+            <result column="longitude" property="longitude" />
+            <result column="address" property="address" />
+            <result column="capacity" property="capacity" />
+            <result column="available_slots" property="availableSlots" />
+            <result column="s_create_time" property="createTime" />
+        </association>
+    </resultMap>
+
+    <select id="selectAll" resultMap="vehicleMap">
+        SELECT v.*, s.id as s_id, s.station_name, s.latitude, s.longitude, 
+               s.address, s.capacity, s.available_slots, s.create_time as s_create_time
+        FROM vehicles v
+        LEFT JOIN stations s ON v.current_station_id = s.id
+    </select>
+
+    <select id="selectById" parameterType="long" resultMap="vehicleMap">
+        SELECT v.*, s.id as s_id, s.station_name, s.latitude, s.longitude, 
+               s.address, s.capacity, s.available_slots, s.create_time as s_create_time
+        FROM vehicles v
+        LEFT JOIN stations s ON v.current_station_id = s.id
+        WHERE v.id = #{id}
+    </select>
+
+    <select id="selectByStatus" parameterType="integer" resultMap="vehicleMap">
+        SELECT v.*, s.id as s_id, s.station_name, s.latitude, s.longitude, 
+               s.address, s.capacity, s.available_slots, s.create_time as s_create_time
+        FROM vehicles v
+        LEFT JOIN stations s ON v.current_station_id = s.id
+        WHERE v.status = #{status}
+    </select>
+
+    <select id="selectByStationId" parameterType="long" resultMap="vehicleMap">
+        SELECT v.*, s.id as s_id, s.station_name, s.latitude, s.longitude, 
+               s.address, s.capacity, s.available_slots, s.create_time as s_create_time
+        FROM vehicles v
+        LEFT JOIN stations s ON v.current_station_id = s.id
+        WHERE v.current_station_id = #{stationId}
+    </select>
+
+    <update id="update" parameterType="com.ebike.entity.Vehicle">
+        UPDATE vehicles SET
+        vehicle_code = #{vehicleCode},
+        vehicle_type = #{vehicleType},
+        status = #{status},
+        current_station_id = #{currentStationId},
+        battery_level = #{batteryLevel},
+        last_maintenance_time = #{lastMaintenanceTime}
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateStatusAndStation">
+        UPDATE vehicles SET status = #{status}, current_station_id = #{stationId} WHERE id = #{id}
+    </update>
+
+    <update id="updateBatteryLevel">
+        UPDATE vehicles SET battery_level = #{batteryLevel} WHERE id = #{id}
+    </update>
+
+    <insert id="insert" parameterType="com.ebike.entity.Vehicle">
+        INSERT INTO vehicles (vehicle_code, vehicle_type, status, current_station_id, battery_level, create_time, last_maintenance_time)
+        VALUES (#{vehicleCode}, #{vehicleType}, #{status}, #{currentStationId}, #{batteryLevel}, #{createTime}, #{lastMaintenanceTime})
+    </insert>
+
+    <select id="selectCount" resultType="long">
+        SELECT COUNT(*) FROM vehicles
+    </select>
+
+    <select id="selectFaultCount" resultType="int">
+        SELECT COUNT(*) FROM vehicles WHERE status IN (3, 4)
+    </select>
+
+    <select id="selectLowBatteryCount" resultType="int">
+        SELECT COUNT(*) FROM vehicles WHERE battery_level &lt; 20 AND status = 1
+    </select>
+</mapper>
